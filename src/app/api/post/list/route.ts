@@ -1,7 +1,7 @@
 import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
-import { _posts } from 'src/_mock/_blog';
+import { PostRepository } from '../../../../repositories/postRepository';
 
 // ----------------------------------------------------------------------
 
@@ -12,7 +12,10 @@ export const runtime = 'edge';
  *************************************** */
 export async function GET() {
   try {
-    const posts = _posts();
+    const reposytory = new PostRepository();
+
+    const posts = await reposytory.findAll()
+
 
     logger('[Post] list', posts.length);
 

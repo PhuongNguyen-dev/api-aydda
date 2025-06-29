@@ -3,37 +3,38 @@ import type { NextRequest } from 'next/server';
 import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
-import {ProductRepository} from "../../../../repositories/productRepository";
+import { ProductRepository } from '../../../../repositories/productRepository';
 
-// ----------------------------------------------------------------------
+import type { IProductInput } from '../../../../repositories/productRepository';
 
 export const runtime = 'edge';
 
 /** **************************************
- * Get product details
+ * PUT - Update product
  *************************************** */
-export async function GET(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const productId = searchParams.get('productId');
 
-    // Kiểm tra xem productId có được cung cấp hay không
     if (!productId) {
       return response({ message: 'Product ID is required' }, STATUS.BAD_REQUEST);
     }
 
-    const repository = new ProductRepository();
-    const product = await repository.findById(productId);
+    const body = await req.json();
+    const productInput: Partial<IProductInput> = body;
 
-    // Kiểm tra xem sản phẩm có tồn tại không
+    const repository = new ProductRepository();
+    const product = await repository.update(productId, productInput);
+
     if (!product) {
       return response({ message: 'Product not found' }, STATUS.NOT_FOUND);
     }
 
-    logger('[Product] details', product.id);
+    logger('[Product] updated', product.id);
 
     return response({ product }, STATUS.OK);
   } catch (error) {
-    return handleError('Product - Get details', error);
+    return handleError('Product - Update', error);
   }
 }

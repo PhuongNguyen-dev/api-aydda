@@ -1,8 +1,6 @@
 import type { FilterQuery } from 'mongoose';
 import type { NextRequest } from 'next/server';
 
-import { kebabCase } from 'es-toolkit';
-
 import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
@@ -13,33 +11,31 @@ import type { IPostInput } from '../../../../repositories/postRepository';
 export const runtime = 'edge';
 
 /** **************************************
- * GET - Post details
+ * DELETE - Delete post
  *************************************** */
-export async function GET(req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-    const title = searchParams.get('title');
+    const postId = searchParams.get('postId');
 
-    if (!title) {
-      return response({ message: 'Title is required' }, STATUS.BAD_REQUEST);
+    if (!postId) {
+      return response({ message: 'Post ID is required' }, STATUS.BAD_REQUEST);
     }
 
     const repository = new PostRepository();
-    const query: FilterQuery<IPostInput> = {
-      slug: kebabCase(title), // Tìm theo slug (kebab-case của title)
-    };
-    const posts = await repository.findByQuery(query);
+    const query: FilterQuery<IPostInput> = { _id: postId };
+    const existingPost = await repository.findByQuery(query);
 
-    const post = posts[0]; // Lấy bài viết đầu tiên khớp
-
-    if (!post) {
+    if (!existingPost[0]) {
       return response({ message: 'Post not found' }, STATUS.NOT_FOUND);
     }
 
-    logger('[Post] details', post.id);
+    await repository.delete(postId);
 
-    return response({ post }, STATUS.OK);
+    logger('[Post] deleted', postId);
+
+    return response({ message: 'Post deleted successfully' }, STATUS.OK);
   } catch (error) {
-    return handleError('Post - Get details', error);
+    return handleError('Post - Delete', error);
   }
 }

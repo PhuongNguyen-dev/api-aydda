@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
-import { _products } from 'src/_mock/_product';
+import { ProductRepository } from '../../../../repositories/productRepository';
 
 // ----------------------------------------------------------------------
 
@@ -21,12 +21,13 @@ export async function GET(req: NextRequest) {
       return response({ results: [] }, STATUS.OK);
     }
 
-    const products = _products();
-
-    // Accept search by name or sku
-    const results = products.filter(
-      ({ name, sku }) => name.toLowerCase().includes(query) || sku?.toLowerCase().includes(query)
-    );
+    const repository = new ProductRepository();
+    const results = await repository.findByQuery({
+      $or: [
+        { name: { $regex: query, $options: 'i' } }, // Tìm kiếm không phân biệt hoa thường
+        { sku: { $regex: query, $options: 'i' } },
+      ],
+    });
 
     logger('[Product] search-results', results.length);
 

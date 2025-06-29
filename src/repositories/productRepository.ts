@@ -1,9 +1,10 @@
+import type {FilterQuery} from "mongoose";
 import type { IProduct } from 'src/models/product.model';
 
 import { Product } from 'src/models/product.model'
 
 // Interface cho dữ liệu đầu vào khi tạo/cập nhật
-interface IProductInput {
+export interface IProductInput {
   name: string;
   price: number;
   description?: string;
@@ -45,7 +46,7 @@ export class ProductRepository {
   }
 
   // Read: Lấy sản phẩm theo điều kiện
-  async findByQuery(query: Partial<IProductInput>): Promise<IProduct[]> {
+  async findByQuery(query: FilterQuery<IProduct>): Promise<IProduct[]> {
     try {
       return await Product.find(query);
     } catch (err: any) {

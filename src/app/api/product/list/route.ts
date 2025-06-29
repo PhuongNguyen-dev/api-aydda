@@ -1,7 +1,5 @@
-import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
-import { _products } from 'src/_mock/_product';
 import { ProductRepository } from '../../../../repositories/productRepository';
 
 // ----------------------------------------------------------------------
@@ -19,10 +17,9 @@ export async function GET() {
     //
     // return response({ products }, STATUS.OK);
 
-
     const reposytory = new ProductRepository();
 
-    const products = await reposytory.findByQuery()
+    const products = await reposytory.findAll()
 
     return response({ products }, STATUS.OK);
 
@@ -32,5 +29,6 @@ export async function GET() {
     return handleError('Product - Get list', error);
   }
 }
+
 
 

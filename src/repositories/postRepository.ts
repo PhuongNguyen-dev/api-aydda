@@ -1,19 +1,19 @@
+import type { FilterQuery } from 'mongoose';
 import type { IPost } from 'src/models/post.model';
 
-import { Post } from 'src/models/post.model'
+import { Post } from 'src/models/post.model';
 
-// Interface cho dữ liệu đầu vào khi tạo/cập nhật
-interface IPostInput {
-  id: string;
-  publish: 'published' | 'draft';
+export interface IPostInput {
+  slug: string;
+  publish?: 'published' | 'draft';
   comments?: {
     id: string;
     name: string;
     avatarUrl: string;
     message: string;
     postedAt: string;
-    users: { id: string; name: string; avatarUrl: string }[];
-    replyComment: (
+    users?: { id: string; name: string; avatarUrl: string }[];
+    replyComment?: (
       | { id: string; userId: string; message: string; postedAt: string }
       | { id: string; userId: string; message: string; tagUser: string; postedAt: string }
       )[];
@@ -24,28 +24,33 @@ interface IPostInput {
   metaTitle: string;
   title: string;
   coverUrl: string;
-  totalViews: number;
-  totalShares: number;
-  totalComments: number;
-  totalFavorites: number;
+  totalViews?: number;
+  totalShares?: number;
+  totalComments?: number;
+  totalFavorites?: number;
   metaDescription: string;
   description: string;
   author: { name: string; avatarUrl: string };
   favoritePerson?: { name: string; avatarUrl: string }[];
+  createdAt?: string;
 }
 
 export class PostRepository {
-  // Create
   async create(postInput: IPostInput): Promise<IPost> {
     try {
-      const post = new Post(postInput);
+      const post = new Post({
+        ...postInput,
+        totalViews: postInput.totalViews ?? 0,
+        totalShares: postInput.totalShares ?? 0,
+        totalComments: postInput.totalComments ?? 0,
+        totalFavorites: postInput.totalFavorites ?? 0,
+      });
       return await post.save();
     } catch (err: any) {
       throw new Error(`Lỗi khi tạo bài viết: ${err.message}`);
     }
   }
 
-  // Read: Lấy tất cả bài viết
   async findAll(): Promise<IPost[]> {
     try {
       return await Post.find();
@@ -54,7 +59,6 @@ export class PostRepository {
     }
   }
 
-  // Read: Lấy bài viết theo ID
   async findById(id: string): Promise<IPost | null> {
     try {
       return await Post.findById(id);
@@ -63,8 +67,7 @@ export class PostRepository {
     }
   }
 
-  // Read: Tìm bài viết theo điều kiện
-  async findByQuery(query: Partial<IPostInput>): Promise<IPost[]> {
+  async findByQuery(query: FilterQuery<IPost>): Promise<IPost[]> {
     try {
       return await Post.find(query);
     } catch (err: any) {
@@ -72,7 +75,6 @@ export class PostRepository {
     }
   }
 
-  // Update
   async update(id: string, postInput: Partial<IPostInput>): Promise<IPost | null> {
     try {
       const post = await Post.findByIdAndUpdate(
@@ -86,7 +88,6 @@ export class PostRepository {
     }
   }
 
-  // Delete
   async delete(id: string): Promise<void> {
     try {
       const result = await Post.findByIdAndDelete(id);

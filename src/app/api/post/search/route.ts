@@ -1,11 +1,12 @@
+import type { FilterQuery } from 'mongoose';
 import type { NextRequest } from 'next/server';
 
 import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
-import { _posts } from 'src/_mock/_blog';
+import { PostRepository } from '../../../../repositories/postRepository';
 
-// ----------------------------------------------------------------------
+import type { IPostInput} from '../../../../repositories/postRepository';
 
 export const runtime = 'edge';
 
@@ -21,13 +22,14 @@ export async function GET(req: NextRequest) {
       return response({ results: [] }, STATUS.OK);
     }
 
-    const posts = _posts();
-
-    // Accept search by title or description
-    const results = posts.filter(
-      ({ title, description }) =>
-        title.toLowerCase().includes(query) || description?.toLowerCase().includes(query)
-    );
+    const repository = new PostRepository();
+    const searchQuery: FilterQuery<IPostInput> = {
+      $or: [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+      ],
+    };
+    const results = await repository.findByQuery(searchQuery);
 
     logger('[Post] search-results', results.length);
 

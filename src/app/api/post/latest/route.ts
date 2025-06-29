@@ -1,3 +1,4 @@
+import type { FilterQuery } from 'mongoose';
 import type { NextRequest } from 'next/server';
 
 import { kebabCase } from 'es-toolkit';
@@ -5,23 +6,26 @@ import { kebabCase } from 'es-toolkit';
 import { logger } from 'src/utils/logger';
 import { STATUS, response, handleError } from 'src/utils/response';
 
-import { _posts } from 'src/_mock/_blog';
+import { PostRepository } from '../../../../repositories/postRepository';
 
-// ----------------------------------------------------------------------
+import type { IPostInput } from '../../../../repositories/postRepository';
 
 export const runtime = 'edge';
 
 /** **************************************
- * Get latest posts
+ * GET - Latest posts
  *************************************** */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const title = searchParams.get('title');
 
-    const posts = _posts();
+    const repository = new PostRepository();
+    const query: FilterQuery<IPostInput> = title
+      ? { slug: { $ne: kebabCase(title) }, publish: 'published' } // Loại bỏ bài viết có slug khớp và chỉ lấy bài viết đã publish
+      : { publish: 'published' }; // Lấy tất cả bài viết đã publish
 
-    const latestPosts = posts.filter((_post) => kebabCase(_post.title) !== title);
+    const latestPosts = await repository.findByQuery(query);
 
     logger('[Post] latest-list', latestPosts.length);
 
