@@ -1,34 +1,21 @@
-import { STATUS, response, handleError } from 'src/utils/response';
+// app/api/product/list/route.ts
 
+'use server';
+
+import { NextResponse } from 'next/server';
+
+import { initialDataBase } from '../../../../repositories/mongoDBConecter';
 import { ProductRepository } from '../../../../repositories/productRepository';
 
-// ----------------------------------------------------------------------
-
-export const runtime = 'edge';
-
-/** **************************************
- * GET - Products
- *************************************** */
 export async function GET() {
   try {
-    // const products = _products();
-    //
-    // logger('[Product] list', products.length);
-    //
-    // return response({ products }, STATUS.OK);
-
-    const reposytory = new ProductRepository();
-
-    const products = await reposytory.findAll()
-
-    return response({ products }, STATUS.OK);
-
-
-
-  } catch (error) {
-    return handleError('Product - Get list', error);
+    // Đảm bảo kết nối MongoDB
+    await initialDataBase();
+    const repository = new ProductRepository();
+    const products = await repository.findAll();
+    return NextResponse.json({ products }, { status: 200 });
+  } catch (error: any) {
+    console.error('[Product - Get list]:', error);
+    return NextResponse.json({ error: 'Failed to fetch products', details: error.message }, { status: 500 });
   }
 }
-
-
-

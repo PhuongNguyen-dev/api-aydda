@@ -1,7 +1,9 @@
-import type {FilterQuery} from "mongoose";
-import type { IProduct } from 'src/models/product.model';
+// src/repositories/productRepository.ts
+import type { FilterQuery } from 'mongoose';
 
-import { Product } from 'src/models/product.model'
+import { Product } from '../models/product.model';
+
+import type { IProduct } from '../models/product.model';
 
 // Interface cho dữ liệu đầu vào khi tạo/cập nhật
 export interface IProductInput {
@@ -30,6 +32,9 @@ export class ProductRepository {
   // Read: Lấy tất cả sản phẩm
   async findAll(): Promise<IProduct[]> {
     try {
+      if (typeof Product.find !== 'function') {
+        throw new Error('Product.find is not a function');
+      }
       return await Product.find();
     } catch (err: any) {
       throw new Error(`Lỗi khi lấy danh sách sản phẩm: ${err.message}`);

@@ -1,8 +1,8 @@
+// src/models/product.model.ts
 import type { Document } from 'mongoose';
 
 import mongoose, { Schema } from 'mongoose';
 
-// Interface cho Product
 export interface IProduct extends Document {
   id: string;
   gender: string[];
@@ -18,14 +18,18 @@ export interface IProduct extends Document {
     helpful: number;
     attachments: string[];
   }[];
-  publish: 'published' | 'draft';
-  ratings: { name: string; starCount: number; reviewCount: number }[];
-  category: 'Shose' | 'Apparel' | 'Accessories';
-  available: 10 | 0;
+  publish: string;
+  ratings: {
+    name: string;
+    starCount: number;
+    reviewCount: number;
+  }[];
+  category: string;
+  available: number;
   priceSale: number | null;
   taxes: number;
   quantity: number;
-  inventoryType: 'in stock' | 'low stock' | 'out of stock';
+  inventoryType: string;
   tags: string[];
   code: string;
   description: string;
@@ -44,12 +48,11 @@ export interface IProduct extends Document {
   subDescription: string;
 }
 
-// Định nghĩa schema
 const productSchema: Schema<IProduct> = new Schema(
   {
     id: { type: String, required: true, unique: true },
     gender: [{ type: String, required: true }],
-    images: [{ type: String, required: true }],
+    images: [{ type: String }],
     reviews: [
       {
         id: { type: String, required: true },
@@ -57,51 +60,50 @@ const productSchema: Schema<IProduct> = new Schema(
         postedAt: { type: String, required: true },
         comment: { type: String, required: true },
         isPurchased: { type: Boolean, required: true },
-        rating: { type: Number, required: true, min: 0, max: 5 },
+        rating: { type: Number, required: true },
         avatarUrl: { type: String, required: true },
-        helpful: { type: Number, required: true, min: 0 },
+        helpful: { type: Number, required: true },
         attachments: [{ type: String }],
       },
     ],
-    publish: { type: String, enum: ['published', 'draft'], required: true },
+    publish: { type: String, required: true },
     ratings: [
       {
         name: { type: String, required: true },
-        starCount: { type: Number, required: true, min: 0, max: 5 },
-        reviewCount: { type: Number, required: true, min: 0 },
+        starCount: { type: Number, required: true },
+        reviewCount: { type: Number, required: true },
       },
     ],
-    category: { type: String, enum: ['Shose', 'Apparel', 'Accessories'], required: true },
-    available: { type: Number, enum: [0, 10], required: true },
+    category: { type: String, required: true },
+    available: { type: Number, required: true },
     priceSale: { type: Number, default: null },
-    taxes: { type: Number, required: true, min: 0 },
-    quantity: { type: Number, required: true, min: 0 },
-    inventoryType: { type: String, enum: ['in stock', 'low stock', 'out of stock'], required: true },
+    taxes: { type: Number, required: true },
+    quantity: { type: Number, required: true },
+    inventoryType: { type: String, required: true },
     tags: [{ type: String }],
-    code: { type: String, required: true, unique: true },
-    description: { type: String, default: '' },
-    sku: { type: String, required: true, unique: true },
-    createdAt: { type: String, default: () => new Date().toISOString() },
+    code: { type: String, required: true },
+    description: { type: String, required: true },
+    sku: { type: String, required: true },
+    createdAt: { type: String, required: true },
     name: { type: String, required: true },
-    price: { type: Number, required: true, min: 0 },
+    price: { type: Number, required: true },
     coverUrl: { type: String, required: true },
-    colors: [{ type: String, required: true }],
-    totalRatings: { type: Number, required: true, min: 0 },
-    totalSold: { type: Number, required: true, min: 0 },
-    totalReviews: { type: Number, required: true, min: 0 },
+    colors: [{ type: String }],
+    totalRatings: { type: Number, required: true },
+    totalSold: { type: Number, required: true },
+    totalReviews: { type: Number, required: true },
     newLabel: {
       enabled: { type: Boolean, required: true },
-      content: { type: String, required: true },
+      content: { type: String, required: true }, // Có thể đổi thành required: false nếu cần
     },
     saleLabel: {
       enabled: { type: Boolean, required: true },
-      content: { type: String, required: true },
+      content: { type: String, required: true }, // Có thể đổi thành required: false nếu cần
     },
-    sizes: [{ type: String, required: true }],
-    subDescription: { type: String, default: '' },
+    sizes: [{ type: String }],
+    subDescription: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-// Tạo model
 export const Product = mongoose.model<IProduct>('Product', productSchema);

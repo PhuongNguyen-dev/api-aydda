@@ -7,6 +7,7 @@ import { Block, Section, TitleBlock } from './(components)/elements';
 
 // ----------------------------------------------------------------------
 initialDataBase()
+
 const sections = [
   {
     title: 'Auth',
